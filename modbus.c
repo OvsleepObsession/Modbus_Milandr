@@ -1,15 +1,15 @@
 #include "modbus.h"
 
-/* ----------------------- GLOBAL --------------------------------*/
+/* ----------------------- GLOBAL ---------------------------------*/
 
-uint8_t arr_in[256]; // входной массив, сюда приходят запросы
-uint8_t addr = 0x01; // адрес ведомого
+uint8_t arr_in[256]; // ГўГµГ®Г¤Г­Г®Г© Г¬Г Г±Г±ГЁГў, Г±ГѕГ¤Г  ГЇГ°ГЁГµГ®Г¤ГїГІ Г§Г ГЇГ°Г®Г±Г»
+uint8_t addr = 0x01; // Г Г¤Г°ГҐГ± ГўГҐГ¤Г®Г¬Г®ГЈГ®
 uint16_t input_reg[1000]; // input registers
 uint16_t hold_reg[1000]; // holding registers
 BOOL coils[1000]; // coils
 BOOL d_inputs[1000]; // descrete imputs
-uint8_t arr_out[256]; // выходной массив, из котрого отправляются данные
-uint8_t t; // счетчик-индекс для выходного массива
+uint8_t arr_out[256]; // ГўГ»ГµГ®Г¤Г­Г®Г© Г¬Г Г±Г±ГЁГў, ГЁГ§ ГЄГ®ГІГ°Г®ГЈГ® Г®ГІГЇГ°Г ГўГ«ГїГѕГІГ±Гї Г¤Г Г­Г­Г»ГҐ
+uint8_t t; // Г±Г·ГҐГІГ·ГЁГЄ-ГЁГ­Г¤ГҐГЄГ± Г¤Г«Гї ГўГ»ГµГ®Г¤Г­Г®ГЈГ® Г¬Г Г±Г±ГЁГўГ 
 BOOL flag = FALSE;
 BOOL crc_check = FALSE;
 
@@ -17,7 +17,7 @@ BOOL coils[1000] = {1,0,0,0,1,0,1,1,1}; // coils test
 
 /* ----------------------- CRC16 --------------------------------*/
 
-const uint16_t table_crc[] = { // таблица CRC
+const uint16_t table_crc[] = { // ГІГ ГЎГ«ГЁГ¶Г  CRC
 0x0000, 0xC0C1, 0xC181, 0x0140, 0xC301, 0x03C0, 0x0280, 0xC241,
 0xC601, 0x06C0, 0x0780, 0xC741, 0x0500, 0xC5C1, 0xC481, 0x0440,
 0xCC01, 0x0CC0, 0x0D80, 0xCD41, 0x0F00, 0xCFC1, 0xCE81, 0x0E40,
@@ -52,7 +52,7 @@ const uint16_t table_crc[] = { // таблица CRC
 0x8201, 0x42C0, 0x4380, 0x8341, 0x4100, 0x81C1, 0x8081, 0x4040
 };
 
-uint16_t get_crc(uint8_t *PtrBuffer, uint8_t SizeBuffer) { // вычисление CRC
+uint16_t get_crc(uint8_t *PtrBuffer, uint8_t SizeBuffer) { // ГўГ»Г·ГЁГ±Г«ГҐГ­ГЁГҐ CRC
 	uint16_t Crc;
 	Crc = 0xffff;
 	while (SizeBuffer--)
@@ -60,7 +60,7 @@ uint16_t get_crc(uint8_t *PtrBuffer, uint8_t SizeBuffer) { // вычисление CRC
 	return (Crc);
 }
 
-BOOL check_crc_in(int i) // сравнение вычисленного CRC с тем, что содержится в запросе
+BOOL check_crc_in(int i) // Г±Г°Г ГўГ­ГҐГ­ГЁГҐ ГўГ»Г·ГЁГ±Г«ГҐГ­Г­Г®ГЈГ® CRC Г± ГІГҐГ¬, Г·ГІГ® Г±Г®Г¤ГҐГ°Г¦ГЁГІГ±Гї Гў Г§Г ГЇГ°Г®Г±ГҐ
 {
 	uint16_t shift = (uint16_t)arr_in[i-1] | (((uint16_t)arr_in[i]) << 8); 
 	uint16_t test = get_crc(arr_in, i-1); 
@@ -125,44 +125,44 @@ void data_transmit(){
 BOOL scan_data()
 {
 	t = 0;
-	arr_out[t++] = addr; // байт адреса устройства
-	arr_out[t++] = arr_in[1]; // код функции
+	arr_out[t++] = addr; // ГЎГ Г©ГІ Г Г¤Г°ГҐГ±Г  ГіГ±ГІГ°Г®Г©Г±ГІГўГ 
+	arr_out[t++] = arr_in[1]; // ГЄГ®Г¤ ГґГіГ­ГЄГ¶ГЁГЁ
 	switch(arr_in[1])
 	{
-		case 0x01: // чтение coils
+		case 0x01: // Г·ГІГҐГ­ГЁГҐ coils
 		{
 			uint16_t startaddr = (uint16_t)arr_in[3] | (((uint16_t)arr_in[2]) << 8);
 			uint16_t count = (uint16_t)arr_in[5] | (((uint16_t)arr_in[4]) << 8);
-			if (count%8==0) // случай, когда количество coils кратно 8
+			if (count%8==0) // Г±Г«ГіГ·Г Г©, ГЄГ®ГЈГ¤Г  ГЄГ®Г«ГЁГ·ГҐГ±ГІГўГ® coils ГЄГ°Г ГІГ­Г® 8
 			{
 				arr_out[t++] = (uint8_t)((int)count/8);
-				int cnt = 0; // счетчик записи битов в байт
+				int cnt = 0; // Г±Г·ГҐГІГ·ГЁГЄ Г§Г ГЇГЁГ±ГЁ ГЎГЁГІГ®Гў Гў ГЎГ Г©ГІ
 				for(int i = startaddr; i<(startaddr + count); i++)
 				{
 					if (coils[i]!=0)
 					{
-						arr_out[t] = 128 | arr_out[t]; // побитовое сложение с 10000000 
+						arr_out[t] = 128 | arr_out[t]; // ГЇГ®ГЎГЁГІГ®ГўГ®ГҐ Г±Г«Г®Г¦ГҐГ­ГЁГҐ Г± 10000000 
 						++cnt;
 					}
 					else
 					{
-						arr_out[t] = 127 & arr_out[t]; // побитовое умножение с 01111111
+						arr_out[t] = 127 & arr_out[t]; // ГЇГ®ГЎГЁГІГ®ГўГ®ГҐ ГіГ¬Г­Г®Г¦ГҐГ­ГЁГҐ Г± 01111111
 						++cnt;
 					}
 					if (cnt<8)
-						arr_out[t] = arr_out[t] >> 1; // однобитовый сдвиг вправо
-					if (cnt == 8) // если записали в текущий байт все 8 бит, то начинаем запись в следующий байт
+						arr_out[t] = arr_out[t] >> 1; // Г®Г¤Г­Г®ГЎГЁГІГ®ГўГ»Г© Г±Г¤ГўГЁГЈ ГўГЇГ°Г ГўГ®
+					if (cnt == 8) // ГҐГ±Г«ГЁ Г§Г ГЇГЁГ±Г Г«ГЁ Гў ГІГҐГЄГіГ№ГЁГ© ГЎГ Г©ГІ ГўГ±ГҐ 8 ГЎГЁГІ, ГІГ® Г­Г Г·ГЁГ­Г ГҐГ¬ Г§Г ГЇГЁГ±Гј Гў Г±Г«ГҐГ¤ГіГѕГ№ГЁГ© ГЎГ Г©ГІ
 					{
 						cnt = 0;
 						++t;
 					}
 				}
 			}
-			else // случай, когда количество coils не кратно 8
+			else // Г±Г«ГіГ·Г Г©, ГЄГ®ГЈГ¤Г  ГЄГ®Г«ГЁГ·ГҐГ±ГІГўГ® coils Г­ГҐ ГЄГ°Г ГІГ­Г® 8
 			{
 				arr_out[t++] = (uint8_t)((int)count/8 + 1); 
 				int cnt = 0;
-				int shift = 7 - count%8; // сдвиг для последнего байта 
+				int shift = 7 - count%8; // Г±Г¤ГўГЁГЈ Г¤Г«Гї ГЇГ®Г±Г«ГҐГ¤Г­ГҐГЈГ® ГЎГ Г©ГІГ  
 				for(int i = startaddr; i<(startaddr + count); i++)
 				{
 					if (coils[i]!=0)
@@ -176,59 +176,59 @@ BOOL scan_data()
 						++cnt;
 					}
 					if (cnt<8)
-						arr_out[t] = arr_out[t] >> 1; // однобитовый сдвиг вправо
+						arr_out[t] = arr_out[t] >> 1; // Г®Г¤Г­Г®ГЎГЁГІГ®ГўГ»Г© Г±Г¤ГўГЁГЈ ГўГЇГ°Г ГўГ®
 					if (cnt == 8)
 					{
 						cnt = 0;
 						++t;
 					}
-					if (i == startaddr + count - 1) // если считываем последний coil
+					if (i == startaddr + count - 1) // ГҐГ±Г«ГЁ Г±Г·ГЁГІГ»ГўГ ГҐГ¬ ГЇГ®Г±Г«ГҐГ¤Г­ГЁГ© coil
 					{
-						arr_out[t] = arr_out[t] >> shift; // сдвигаем вправо на недостающее число битов в последнем байте
+						arr_out[t] = arr_out[t] >> shift; // Г±Г¤ГўГЁГЈГ ГҐГ¬ ГўГЇГ°Г ГўГ® Г­Г  Г­ГҐГ¤Г®Г±ГІГ ГѕГ№ГҐГҐ Г·ГЁГ±Г«Г® ГЎГЁГІГ®Гў Гў ГЇГ®Г±Г«ГҐГ¤Г­ГҐГ¬ ГЎГ Г©ГІГҐ
 						++t;
 					}
 				}
 			}
-			fill_crc_out(); // вычисление и вставка CRC в конец ответного сообщения
-			data_transmit(); // отправка сообщения
-			clear_arr(); // чистка входного и выходного массива
-			flag = FALSE; // сброс флага
+			fill_crc_out(); // ГўГ»Г·ГЁГ±Г«ГҐГ­ГЁГҐ ГЁ ГўГ±ГІГ ГўГЄГ  CRC Гў ГЄГ®Г­ГҐГ¶ Г®ГІГўГҐГІГ­Г®ГЈГ® Г±Г®Г®ГЎГ№ГҐГ­ГЁГї
+			data_transmit(); // Г®ГІГЇГ°Г ГўГЄГ  Г±Г®Г®ГЎГ№ГҐГ­ГЁГї
+			clear_arr(); // Г·ГЁГ±ГІГЄГ  ГўГµГ®Г¤Г­Г®ГЈГ® ГЁ ГўГ»ГµГ®Г¤Г­Г®ГЈГ® Г¬Г Г±Г±ГЁГўГ 
+			flag = FALSE; // Г±ГЎГ°Г®Г± ГґГ«Г ГЈГ 
 			return TRUE;
 		}
-		case 0x02: // чтение discrete imputs
+		case 0x02: // Г·ГІГҐГ­ГЁГҐ discrete imputs
 		{
 			uint16_t startaddr = (uint16_t)arr_in[3] | (((uint16_t)arr_in[2]) << 8);
 			uint16_t count = (uint16_t)arr_in[5] | (((uint16_t)arr_in[4]) << 8);
-			if (count%8==0) // случай, когда количество discrete inputs кратно 8
+			if (count%8==0) // Г±Г«ГіГ·Г Г©, ГЄГ®ГЈГ¤Г  ГЄГ®Г«ГЁГ·ГҐГ±ГІГўГ® discrete inputs ГЄГ°Г ГІГ­Г® 8
 			{
 				arr_out[t++] = (uint8_t)((int)count/8);
-				int cnt = 0; // счетчик записи битов в байт
+				int cnt = 0; // Г±Г·ГҐГІГ·ГЁГЄ Г§Г ГЇГЁГ±ГЁ ГЎГЁГІГ®Гў Гў ГЎГ Г©ГІ
 				for(int i = startaddr; i<(startaddr + count); i++)
 				{
 					if (d_inputs[i]!=0)
 					{
-						arr_out[t] = 128 | arr_out[t]; // побитовое сложение с 10000000 
+						arr_out[t] = 128 | arr_out[t]; // ГЇГ®ГЎГЁГІГ®ГўГ®ГҐ Г±Г«Г®Г¦ГҐГ­ГЁГҐ Г± 10000000 
 						++cnt;
 					}
 					else
 					{
-						arr_out[t] = 127 & arr_out[t]; // побитовое умножение с 01111111
+						arr_out[t] = 127 & arr_out[t]; // ГЇГ®ГЎГЁГІГ®ГўГ®ГҐ ГіГ¬Г­Г®Г¦ГҐГ­ГЁГҐ Г± 01111111
 						++cnt;
 					}
 					if (cnt<8)
-						arr_out[t] = arr_out[t] >> 1; // однобитовый сдвиг вправо
-					if (cnt == 8) // если записали в текущий байт все 8 бит, то начинаем запись в следующий байт
+						arr_out[t] = arr_out[t] >> 1; // Г®Г¤Г­Г®ГЎГЁГІГ®ГўГ»Г© Г±Г¤ГўГЁГЈ ГўГЇГ°Г ГўГ®
+					if (cnt == 8) // ГҐГ±Г«ГЁ Г§Г ГЇГЁГ±Г Г«ГЁ Гў ГІГҐГЄГіГ№ГЁГ© ГЎГ Г©ГІ ГўГ±ГҐ 8 ГЎГЁГІ, ГІГ® Г­Г Г·ГЁГ­Г ГҐГ¬ Г§Г ГЇГЁГ±Гј Гў Г±Г«ГҐГ¤ГіГѕГ№ГЁГ© ГЎГ Г©ГІ
 					{
 						cnt = 0;
 						++t;
 					}
 				}
 			}
-			else // случай, когда количество discrete imputs не кратно 8
+			else // Г±Г«ГіГ·Г Г©, ГЄГ®ГЈГ¤Г  ГЄГ®Г«ГЁГ·ГҐГ±ГІГўГ® discrete imputs Г­ГҐ ГЄГ°Г ГІГ­Г® 8
 			{
 				arr_out[t++] = (uint8_t)((int)count/8 + 1); 
 				int cnt = 0;
-				int shift = 7 - count%8; // сдвиг для последнего байта 
+				int shift = 7 - count%8; // Г±Г¤ГўГЁГЈ Г¤Г«Гї ГЇГ®Г±Г«ГҐГ¤Г­ГҐГЈГ® ГЎГ Г©ГІГ  
 				for(int i = startaddr; i<(startaddr + count); i++)
 				{
 					if (d_inputs[i]!=0)
@@ -242,15 +242,15 @@ BOOL scan_data()
 						++cnt;
 					}
 					if (cnt<8)
-						arr_out[t] = arr_out[t] >> 1; // однобитовый сдвиг вправо
+						arr_out[t] = arr_out[t] >> 1; // Г®Г¤Г­Г®ГЎГЁГІГ®ГўГ»Г© Г±Г¤ГўГЁГЈ ГўГЇГ°Г ГўГ®
 					if (cnt == 8)
 					{
 						cnt = 0;
 						++t;
 					}
-					if (i == startaddr + count - 1) // если считываем последний discrete input
+					if (i == startaddr + count - 1) // ГҐГ±Г«ГЁ Г±Г·ГЁГІГ»ГўГ ГҐГ¬ ГЇГ®Г±Г«ГҐГ¤Г­ГЁГ© discrete input
 					{
-						arr_out[t] = arr_out[t] >> shift; // сдвигаем вправо на недостающее число битов в последнем байте
+						arr_out[t] = arr_out[t] >> shift; // Г±Г¤ГўГЁГЈГ ГҐГ¬ ГўГЇГ°Г ГўГ® Г­Г  Г­ГҐГ¤Г®Г±ГІГ ГѕГ№ГҐГҐ Г·ГЁГ±Г«Г® ГЎГЁГІГ®Гў Гў ГЇГ®Г±Г«ГҐГ¤Г­ГҐГ¬ ГЎГ Г©ГІГҐ
 						++t;
 					}
 				}
@@ -261,15 +261,15 @@ BOOL scan_data()
 			flag = FALSE;
 			return TRUE;
 		}	
-		case 0x03: // чтение holding registers
+		case 0x03: // Г·ГІГҐГ­ГЁГҐ holding registers
 		{
-			uint16_t startaddr = (uint16_t)arr_in[3] | (((uint16_t)arr_in[2]) << 8); // адрес регистра
-			uint16_t count = (uint16_t)arr_in[5] | (((uint16_t)arr_in[4]) << 8); // количество данных
-			arr_out[t++] = 2*(uint8_t)count; // количество байт данных в ответном сообщении
+			uint16_t startaddr = (uint16_t)arr_in[3] | (((uint16_t)arr_in[2]) << 8); // Г Г¤Г°ГҐГ± Г°ГҐГЈГЁГ±ГІГ°Г 
+			uint16_t count = (uint16_t)arr_in[5] | (((uint16_t)arr_in[4]) << 8); // ГЄГ®Г«ГЁГ·ГҐГ±ГІГўГ® Г¤Г Г­Г­Г»Гµ
+			arr_out[t++] = 2*(uint8_t)count; // ГЄГ®Г«ГЁГ·ГҐГ±ГІГўГ® ГЎГ Г©ГІ Г¤Г Г­Г­Г»Гµ Гў Г®ГІГўГҐГІГ­Г®Г¬ Г±Г®Г®ГЎГ№ГҐГ­ГЁГЁ
 			for(int i = startaddr; i<(startaddr + count); i++)
 			{
-				arr_out[t++] = hold_reg[i] >> 8; // старший байт значения
-				arr_out[t++] = hold_reg[i] & 0x00ff; // младший байт значения
+				arr_out[t++] = hold_reg[i] >> 8; // Г±ГІГ Г°ГёГЁГ© ГЎГ Г©ГІ Г§Г­Г Г·ГҐГ­ГЁГї
+				arr_out[t++] = hold_reg[i] & 0x00ff; // Г¬Г«Г Г¤ГёГЁГ© ГЎГ Г©ГІ Г§Г­Г Г·ГҐГ­ГЁГї
 			}
 			fill_crc_out();
 			data_transmit();
@@ -277,7 +277,7 @@ BOOL scan_data()
 			flag = FALSE;
 			return TRUE;
 		}
-		case 0x04: // чтение imput registers
+		case 0x04: // Г·ГІГҐГ­ГЁГҐ imput registers
 		{
 			uint16_t startaddr = (uint16_t)arr_in[3] | (((uint16_t)arr_in[2]) << 8);
 			uint16_t count = (uint16_t)arr_in[5] | (((uint16_t)arr_in[4]) << 8);
@@ -293,7 +293,7 @@ BOOL scan_data()
 			flag = FALSE;
 			return TRUE;
 		}
-		case 0x05: // запись одного значения coil
+		case 0x05: // Г§Г ГЇГЁГ±Гј Г®Г¤Г­Г®ГЈГ® Г§Г­Г Г·ГҐГ­ГЁГї coil
 		{
 			uint16_t coil_addr = (uint16_t)arr_in[3] | (((uint16_t)arr_in[2]) << 8);
 			uint16_t coil_val = (uint16_t)arr_in[5] | (((uint16_t)arr_in[4]) << 8);
@@ -305,14 +305,14 @@ BOOL scan_data()
 				coils[coil_addr]= FALSE;
 			
 			for(int i = 0; i < 8; i++)
-				arr_out[i] = arr_in[i]; // ответное сообщение - копия запроса
+				arr_out[i] = arr_in[i]; // Г®ГІГўГҐГІГ­Г®ГҐ Г±Г®Г®ГЎГ№ГҐГ­ГЁГҐ - ГЄГ®ГЇГЁГї Г§Г ГЇГ°Г®Г±Г 
 			t = 8;
 			data_transmit();
 			clear_arr();
 			flag = FALSE;
 			return TRUE;
 		}
-		case 0x06: // запись одного значения holding register
+		case 0x06: // Г§Г ГЇГЁГ±Гј Г®Г¤Г­Г®ГЈГ® Г§Г­Г Г·ГҐГ­ГЁГї holding register
 		{
 			uint16_t reg_addr = (uint16_t)arr_in[3] | (((uint16_t)arr_in[2]) << 8);
 			uint16_t reg_val = (uint16_t)arr_in[5] | (((uint16_t)arr_in[4]) << 8);
@@ -325,7 +325,7 @@ BOOL scan_data()
 			flag = FALSE;
 			return TRUE;
 		}
-		case 0x0F: // запись нескольких значений coils
+		case 0x0F: // Г§Г ГЇГЁГ±Гј Г­ГҐГ±ГЄГ®Г«ГјГЄГЁГµ Г§Г­Г Г·ГҐГ­ГЁГ© coils
 		{
 			uint16_t coil_addr = (uint16_t)arr_in[3] | (((uint16_t)arr_in[2]) << 8);
 			uint16_t count = (uint16_t)arr_in[5] | (((uint16_t)arr_in[4]) << 8);
@@ -364,7 +364,7 @@ BOOL scan_data()
 			flag = FALSE;
 			return TRUE;
 		}
-		case 0x10: // запись нескольких значений holding registers
+		case 0x10: // Г§Г ГЇГЁГ±Гј Г­ГҐГ±ГЄГ®Г«ГјГЄГЁГµ Г§Г­Г Г·ГҐГ­ГЁГ© holding registers
 		{
 			uint16_t reg_addr = (uint16_t)arr_in[3] | (((uint16_t)arr_in[2]) << 8);
 			uint16_t count = (uint16_t)arr_in[5] | (((uint16_t)arr_in[4]) << 8);
@@ -389,18 +389,18 @@ BOOL scan_data()
 
 BOOL data_receive(void)
 {
-	arr_in[1] = (uint8_t)UART_ReceiveData(MDR_UART2); // Код функции
+	arr_in[1] = (uint8_t)UART_ReceiveData(MDR_UART2); // ГЉГ®Г¤ ГґГіГ­ГЄГ¶ГЁГЁ
 	if ((arr_in[1]!= 0x0F) && (arr_in[1]!= 0x10)) 
 	{
-	arr_in[2] = (uint8_t)UART_ReceiveData(MDR_UART2); // ст. байт адреса
-	arr_in[3] = (uint8_t)UART_ReceiveData(MDR_UART2); // мл. байт адреса
-	arr_in[4] = (uint8_t)UART_ReceiveData(MDR_UART2); // ст. байт кол-ва данных
-	arr_in[5] = (uint8_t)UART_ReceiveData(MDR_UART2); // мл. байт кол-ва данных
+	arr_in[2] = (uint8_t)UART_ReceiveData(MDR_UART2); // Г±ГІ. ГЎГ Г©ГІ Г Г¤Г°ГҐГ±Г 
+	arr_in[3] = (uint8_t)UART_ReceiveData(MDR_UART2); // Г¬Г«. ГЎГ Г©ГІ Г Г¤Г°ГҐГ±Г 
+	arr_in[4] = (uint8_t)UART_ReceiveData(MDR_UART2); // Г±ГІ. ГЎГ Г©ГІ ГЄГ®Г«-ГўГ  Г¤Г Г­Г­Г»Гµ
+	arr_in[5] = (uint8_t)UART_ReceiveData(MDR_UART2); // Г¬Г«. ГЎГ Г©ГІ ГЄГ®Г«-ГўГ  Г¤Г Г­Г­Г»Гµ
 	arr_in[6] = (uint8_t)UART_ReceiveData(MDR_UART2); // CRC
 	arr_in[7] = (uint8_t)UART_ReceiveData(MDR_UART2); // CRC
 	return check_crc_in(7);
 	}
-	else // если запрос длиннее 8 байт
+	else // ГҐГ±Г«ГЁ Г§Г ГЇГ°Г®Г± Г¤Г«ГЁГ­Г­ГҐГҐ 8 ГЎГ Г©ГІ
 	{
 		arr_in[2] = (uint8_t)UART_ReceiveData(MDR_UART2);
 		arr_in[3] = (uint8_t)UART_ReceiveData(MDR_UART2);
@@ -421,64 +421,64 @@ BOOL data_receive(void)
 /* ------------------- CONNNECTION SETTINGS --------------------------- */
 BOOL establish_settings(uint32_t baud, uint16_t wordlength, uint16_t stopbits, uint16_t parity)
 {
-        // Включение тактирования порта F
+        // Г‚ГЄГ«ГѕГ·ГҐГ­ГЁГҐ ГІГ ГЄГІГЁГ°Г®ГўГ Г­ГЁГї ГЇГ®Г°ГІГ  F
         RST_CLK_PCLKcmd(RST_CLK_PCLK_PORTF, ENABLE); 
-        // Объявление структуры для инициализации порта
+        // ГЋГЎГєГїГўГ«ГҐГ­ГЁГҐ Г±ГІГ°ГіГЄГІГіГ°Г» Г¤Г«Гї ГЁГ­ГЁГ¶ГЁГ Г«ГЁГ§Г Г¶ГЁГЁ ГЇГ®Г°ГІГ 
         PORT_InitTypeDef uart2_port_set;  
-        // Инициализация порта F для функции UART
-        // Настройка порта по умолчанию
+        // Г€Г­ГЁГ¶ГЁГ Г«ГЁГ§Г Г¶ГЁГї ГЇГ®Г°ГІГ  F Г¤Г«Гї ГґГіГ­ГЄГ¶ГЁГЁ UART
+        // ГЌГ Г±ГІГ°Г®Г©ГЄГ  ГЇГ®Г°ГІГ  ГЇГ® ГіГ¬Г®Г«Г·Г Г­ГЁГѕ
         PORT_StructInit(&uart2_port_set);  
-        // Переопределение функции порта
+        // ГЏГҐГ°ГҐГ®ГЇГ°ГҐГ¤ГҐГ«ГҐГ­ГЁГҐ ГґГіГ­ГЄГ¶ГЁГЁ ГЇГ®Г°ГІГ 
         uart2_port_set.PORT_FUNC = PORT_FUNC_OVERRID;  
-        // Установка короткого фронта
+        // Г“Г±ГІГ Г­Г®ГўГЄГ  ГЄГ®Г°Г®ГІГЄГ®ГЈГ® ГґГ°Г®Г­ГІГ 
         uart2_port_set.PORT_SPEED = PORT_SPEED_MAXFAST;  
-        // Цифровой режим работы вывода
+        // Г–ГЁГґГ°Г®ГўГ®Г© Г°ГҐГ¦ГЁГ¬ Г°Г ГЎГ®ГІГ» ГўГ»ГўГ®Г¤Г 
         uart2_port_set.PORT_MODE = PORT_MODE_DIGITAL;  
-        // Инициализация вывода PF1 как UART_TX (передача)
+        // Г€Г­ГЁГ¶ГЁГ Г«ГЁГ§Г Г¶ГЁГї ГўГ»ГўГ®Г¤Г  PF1 ГЄГ ГЄ UART_TX (ГЇГҐГ°ГҐГ¤Г Г·Г )
         uart2_port_set.PORT_Pin = PORT_Pin_1;
         uart2_port_set.PORT_OE = PORT_OE_OUT;
         PORT_Init(MDR_PORTF, &uart2_port_set);
-        // Инициализация вывода PF0 как UART_RX (прием)
+        // Г€Г­ГЁГ¶ГЁГ Г«ГЁГ§Г Г¶ГЁГї ГўГ»ГўГ®Г¤Г  PF0 ГЄГ ГЄ UART_RX (ГЇГ°ГЁГҐГ¬)
         uart2_port_set.PORT_Pin = PORT_Pin_0;
         uart2_port_set.PORT_OE = PORT_OE_IN;
 				PORT_Init(MDR_PORTF, &uart2_port_set);
-				// Указание типа структуры и имени структуры 
+				// Г“ГЄГ Г§Г Г­ГЁГҐ ГІГЁГЇГ  Г±ГІГ°ГіГЄГІГіГ°Г» ГЁ ГЁГ¬ГҐГ­ГЁ Г±ГІГ°ГіГЄГІГіГ°Г» 
 				PORT_InitTypeDef Nastroyka_D; 
-				// Работа в альтернативном режиме порта EXT_INT2 
-				// Цифровой режим 
+				// ГђГ ГЎГ®ГІГ  Гў Г Г«ГјГІГҐГ°Г­Г ГІГЁГўГ­Г®Г¬ Г°ГҐГ¦ГЁГ¬ГҐ ГЇГ®Г°ГІГ  EXT_INT2 
+				// Г–ГЁГґГ°Г®ГўГ®Г© Г°ГҐГ¦ГЁГ¬ 
 				Nastroyka_D.PORT_MODE = PORT_MODE_ANALOG; 
-				// Низкая скорость переключения (пологий фронт) 
+				// ГЌГЁГ§ГЄГ Гї Г±ГЄГ®Г°Г®Г±ГІГј ГЇГҐГ°ГҐГЄГ«ГѕГ·ГҐГ­ГЁГї (ГЇГ®Г«Г®ГЈГЁГ© ГґГ°Г®Г­ГІ) 
 				Nastroyka_D.PORT_SPEED = PORT_SPEED_SLOW; 
-				// Конфигурация линии порта как входа 
+				// ГЉГ®Г­ГґГЁГЈГіГ°Г Г¶ГЁГї Г«ГЁГ­ГЁГЁ ГЇГ®Г°ГІГ  ГЄГ ГЄ ГўГµГ®Г¤Г  
 				Nastroyka_D.PORT_OE = PORT_OE_IN; 
-				// Объявление номера линии порта, которая 
-				// настраивается данной структурой 
+				// ГЋГЎГєГїГўГ«ГҐГ­ГЁГҐ Г­Г®Г¬ГҐГ°Г  Г«ГЁГ­ГЁГЁ ГЇГ®Г°ГІГ , ГЄГ®ГІГ®Г°Г Гї 
+				// Г­Г Г±ГІГ°Г ГЁГўГ ГҐГІГ±Гї Г¤Г Г­Г­Г®Г© Г±ГІГ°ГіГЄГІГіГ°Г®Г© 
 				Nastroyka_D.PORT_Pin = PORT_Pin_2; 
-				//Инициализация порта C объявленной структурой 
+				//Г€Г­ГЁГ¶ГЁГ Г«ГЁГ§Г Г¶ГЁГї ГЇГ®Г°ГІГ  C Г®ГЎГєГїГўГ«ГҐГ­Г­Г®Г© Г±ГІГ°ГіГЄГІГіГ°Г®Г© 
 				PORT_Init(MDR_PORTD, &Nastroyka_D);
-        // Процедура инициализации контроллера UART
-        // Включение тактирования UART2
+        // ГЏГ°Г®Г¶ГҐГ¤ГіГ°Г  ГЁГ­ГЁГ¶ГЁГ Г«ГЁГ§Г Г¶ГЁГЁ ГЄГ®Г­ГІГ°Г®Г«Г«ГҐГ°Г  UART
+        // Г‚ГЄГ«ГѕГ·ГҐГ­ГЁГҐ ГІГ ГЄГІГЁГ°Г®ГўГ Г­ГЁГї UART2
         RST_CLK_PCLKcmd(RST_CLK_PCLK_UART2, ENABLE);
-        // Объявление структуры для инициализации контроллера UART
+        // ГЋГЎГєГїГўГ«ГҐГ­ГЁГҐ Г±ГІГ°ГіГЄГІГіГ°Г» Г¤Г«Гї ГЁГ­ГЁГ¶ГЁГ Г«ГЁГ§Г Г¶ГЁГЁ ГЄГ®Г­ГІГ°Г®Г«Г«ГҐГ°Г  UART
         UART_InitTypeDef UART_InitStructure;
-        // Делитель тактовой частоты UART = 1
+        // Г„ГҐГ«ГЁГІГҐГ«Гј ГІГ ГЄГІГ®ГўГ®Г© Г·Г Г±ГІГ®ГІГ» UART = 1
         UART_BRGInit(MDR_UART2,UART_HCLKdiv1);
-        // Конфигурация UART
-        // Скорость передачи данных
+        // ГЉГ®Г­ГґГЁГЈГіГ°Г Г¶ГЁГї UART
+        // Г‘ГЄГ®Г°Г®Г±ГІГј ГЇГҐГ°ГҐГ¤Г Г·ГЁ Г¤Г Г­Г­Г»Гµ
         UART_InitStructure.UART_BaudRate = baud;
-        // Количество бит в посылке 
+        // ГЉГ®Г«ГЁГ·ГҐГ±ГІГўГ® ГЎГЁГІ Гў ГЇГ®Г±Г»Г«ГЄГҐ 
         UART_InitStructure.UART_WordLength = wordlength;
-        // стоп-бит
+        // Г±ГІГ®ГЇ-ГЎГЁГІ
         UART_InitStructure.UART_StopBits = stopbits;
-        // Проверка четности
+        // ГЏГ°Г®ГўГҐГ°ГЄГ  Г·ГҐГІГ­Г®Г±ГІГЁ
         UART_InitStructure.UART_Parity = parity;
-        // Включить работу буфера FIFO приемника и передатчика,
+        // Г‚ГЄГ«ГѕГ·ГЁГІГј Г°Г ГЎГ®ГІГі ГЎГіГґГҐГ°Г  FIFO ГЇГ°ГЁГҐГ¬Г­ГЁГЄГ  ГЁ ГЇГҐГ°ГҐГ¤Г ГІГ·ГЁГЄГ ,
         UART_InitStructure.UART_FIFOMode = UART_FIFO_ON;
-        // Разрешить прием и передачу данных
+        // ГђГ Г§Г°ГҐГёГЁГІГј ГЇГ°ГЁГҐГ¬ ГЁ ГЇГҐГ°ГҐГ¤Г Г·Гі Г¤Г Г­Г­Г»Гµ
         UART_InitStructure.UART_HardwareFlowControl = UART_HardwareFlowControl_RXE | UART_HardwareFlowControl_TXE;
-        // Инициализация UART2 с заданными параметрами
+        // Г€Г­ГЁГ¶ГЁГ Г«ГЁГ§Г Г¶ГЁГї UART2 Г± Г§Г Г¤Г Г­Г­Г»Г¬ГЁ ГЇГ Г°Г Г¬ГҐГІГ°Г Г¬ГЁ
         UART_Init(MDR_UART2, &UART_InitStructure);
-        // Включить сконфигурированный UART
+        // Г‚ГЄГ«ГѕГ·ГЁГІГј Г±ГЄГ®Г­ГґГЁГЈГіГ°ГЁГ°Г®ГўГ Г­Г­Г»Г© UART
 				__enable_irq();
 				UART_ITConfig(MDR_UART2, UART_IT_RX, ENABLE);
 			  NVIC_EnableIRQ(UART2_IRQn);
