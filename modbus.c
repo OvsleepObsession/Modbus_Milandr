@@ -62,7 +62,10 @@ uint16_t get_crc(uint8_t *PtrBuffer, uint8_t SizeBuffer) { // вычислени
 
 BOOL check_crc_in(int i) // сравнение вычисленного CRC с тем, что содержится в запросе
 {
+	// for Qt
 	uint16_t shift = (uint16_t)arr_in[i-1] | (((uint16_t)arr_in[i]) << 8); 
+	// for non-Qt
+	// uint16_t shift = (((uint16_t)arr_in[i-1]) << 8) | (uint16_t)arr_in[i] ; 
 	uint16_t test = get_crc(arr_in, i-1); 
 	if (test == shift) return TRUE;
 	else return FALSE;
