@@ -441,21 +441,21 @@ BOOL establish_settings(uint32_t baud, uint16_t wordlength, uint16_t stopbits, u
         // Инициализация вывода PF0 как UART_RX (прием)
         uart2_port_set.PORT_Pin = PORT_Pin_0;
         uart2_port_set.PORT_OE = PORT_OE_IN;
-				PORT_Init(MDR_PORTF, &uart2_port_set);
-				// Указание типа структуры и имени структуры 
-				PORT_InitTypeDef Nastroyka_D; 
-				// Работа в альтернативном режиме порта EXT_INT2 
-				// Цифровой режим 
-				Nastroyka_D.PORT_MODE = PORT_MODE_ANALOG; 
-				// Низкая скорость переключения (пологий фронт) 
-				Nastroyka_D.PORT_SPEED = PORT_SPEED_SLOW; 
-				// Конфигурация линии порта как входа 
-				Nastroyka_D.PORT_OE = PORT_OE_IN; 
-				// Объявление номера линии порта, которая 
-				// настраивается данной структурой 
-				Nastroyka_D.PORT_Pin = PORT_Pin_2; 
-				//Инициализация порта C объявленной структурой 
-				PORT_Init(MDR_PORTD, &Nastroyka_D);
+	PORT_Init(MDR_PORTF, &uart2_port_set);
+	// Указание типа структуры и имени структуры 
+	PORT_InitTypeDef Nastroyka_D; 
+	// Работа в альтернативном режиме порта EXT_INT2 
+	// Цифровой режим 
+	Nastroyka_D.PORT_MODE = PORT_MODE_ANALOG; 
+	// Низкая скорость переключения (пологий фронт) 
+	Nastroyka_D.PORT_SPEED = PORT_SPEED_SLOW; 
+	// Конфигурация линии порта как входа 
+	Nastroyka_D.PORT_OE = PORT_OE_IN; 
+	// Объявление номера линии порта, которая 
+	// настраивается данной структурой 
+	Nastroyka_D.PORT_Pin = PORT_Pin_2; 
+	//Инициализация порта C объявленной структурой 
+	PORT_Init(MDR_PORTD, &Nastroyka_D);
         // Процедура инициализации контроллера UART
         // Включение тактирования UART2
         RST_CLK_PCLKcmd(RST_CLK_PCLK_UART2, ENABLE);
@@ -478,12 +478,12 @@ BOOL establish_settings(uint32_t baud, uint16_t wordlength, uint16_t stopbits, u
         UART_InitStructure.UART_HardwareFlowControl = UART_HardwareFlowControl_RXE | UART_HardwareFlowControl_TXE;
         // Инициализация UART2 с заданными параметрами
         UART_Init(MDR_UART2, &UART_InitStructure);
-        // Включить сконфигурированный UART
-				__enable_irq();
-				UART_ITConfig(MDR_UART2, UART_IT_RX, ENABLE);
-			  NVIC_EnableIRQ(UART2_IRQn);
+	__enable_irq();
+	// Включить сконфигурированный UART
+	UART_ITConfig(MDR_UART2, UART_IT_RX, ENABLE);
+	NVIC_EnableIRQ(UART2_IRQn);
         UART_Cmd(MDR_UART2, ENABLE);
-				return TRUE;
+	return TRUE;
 }
 
 /* ---------------------- INTERRUPTION -------------------------------- */
