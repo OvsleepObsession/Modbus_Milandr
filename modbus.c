@@ -68,11 +68,17 @@ BOOL check_crc_in(int i) // сравнение вычисленного CRC с �
 	else return FALSE;
 }
 
-void fill_crc_out()
+void fill_crc_out() 
 {
 	const uint16_t crc_out = get_crc(arr_out, t);
-	arr_out[t++] = crc_out & 0x00ff;
+	// for QT
+	arr_out[t++] = crc_out & 0x00ff; 
 	arr_out[t++] = crc_out >> 8;
+	// for non-QT
+	/*
+	arr_out[t++] = crc_out >> 8;
+	arr_out[t++] = crc_out & 0x00ff; 
+	*/
 }
 /* ----------------------- DATA FILL AND REMOVAL --------------------------------*/
 void storage_fill() // holding registers test
